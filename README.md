@@ -10,7 +10,8 @@
 - JDBC
 
 ## Desenvolvedor
-xande
+
+0XandeDev
 
 ## Objetivo
 Sistema para gerenciar biblioteca com controle de livros, usuários e empréstimos.
