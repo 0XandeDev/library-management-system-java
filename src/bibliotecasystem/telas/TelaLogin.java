@@ -1,27 +1,28 @@
 package bibliotecasystem.telas;
 
+import bibliotecasystem.modelos.Usuario;
+import bibliotecasystem.service.AuthService;
+
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TelaLogin extends JFrame {
+    private static final Logger LOGGER = Logger.getLogger(TelaLogin.class.getName());
     private JTextField campoUsuario;
     private JPasswordField campoSenha;
     private JCheckBox checkLembrar;
     private JButton btnEntrar;
     private JLabel lblAcessibilidade;
-    
-    // Usuários válidos para demonstração
-    private String[][] usuariosValidos = {
-        {"admin", "admin123", "Administrador"},
-        {"bibliotecario", "bib123", "Bibliotecário"},
-        {"usuario", "user123", "Usuário Comum"},
-        {"maria", "maria123", "Maria Silva"}
-    };
+    private AuthService authService;
     
     public TelaLogin() {
+        authService = new AuthService();
         configurarJanela();
         inicializarComponentes();
         configurarLayout();
@@ -212,44 +213,33 @@ public class TelaLogin extends JFrame {
             return;
         }
         
-        // Verificar credenciais
-        boolean loginValido = false;
-        String nomeUsuario = "";
-        
-        for (String[] user : usuariosValidos) {
-            if (user[0].equals(usuario) && user[1].equals(senha)) {
-                loginValido = true;
-                nomeUsuario = user[2];
-                break;
+        try {
+            Usuario usuarioAutenticado = authService.autenticar(usuario, senha);
+            if (usuarioAutenticado != null) {
+                JOptionPane.showMessageDialog(this,
+                    "Login realizado com sucesso!\nBem-vindo, " + usuarioAutenticado.getNome() + "!",
+                    "Login OK",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+                TelaPrincipal principal = new TelaPrincipal();
+                principal.setVisible(true);
+                this.dispose();
+                return;
             }
-        }
-        
-        if (loginValido) {
-            JOptionPane.showMessageDialog(this, 
-                "Login realizado com sucesso!\nBem-vindo, " + nomeUsuario + "!", 
-                "Login OK", 
-                JOptionPane.INFORMATION_MESSAGE);
-            
-            // Abrir tela principal
-            TelaPrincipal principal = new TelaPrincipal();
-            principal.setVisible(true);
-            this.dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, 
-                "Usuário ou senha incorretos!\n\n" +
-                "Usuários válidos para teste:\n" +
-                "• admin / admin123\n" +
-                "• bibliotecario / bib123\n" +
-                "• usuario / user123\n" +
-                "• maria / maria123", 
-                "Erro de Login", 
+            JOptionPane.showMessageDialog(this,
+                "Usuário ou senha incorretos. Verifique suas credenciais e tente novamente.",
+                "Erro de Login",
                 JOptionPane.ERROR_MESSAGE);
-            
-            // Limpar campo de senha e focar no usuário
-            campoSenha.setText("");
-            campoUsuario.requestFocusInWindow();
-            campoUsuario.selectAll();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Erro ao autenticar usuário", e);
+            JOptionPane.showMessageDialog(this,
+                "Erro ao processar o login. Por favor, tente novamente mais tarde.\n" + e.getMessage(),
+                "Erro de Login",
+                JOptionPane.ERROR_MESSAGE);
         }
+        campoSenha.setText("");
+        campoUsuario.requestFocusInWindow();
+        campoUsuario.selectAll();
     }
     
     private void mostrarAjuda() {

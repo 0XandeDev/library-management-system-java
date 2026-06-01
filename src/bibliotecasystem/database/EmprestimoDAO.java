@@ -1,12 +1,15 @@
 package bibliotecasystem.database;
 
 import bibliotecasystem.modelos.Emprestimo;
+import bibliotecasystem.util.LoggerUtils;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class EmprestimoDAO {
+    private static final Logger LOGGER = LoggerUtils.getLogger(EmprestimoDAO.class.getName());
     
     public EmprestimoDAO() {
         // Construtor vazio - conexão será feita quando necessário

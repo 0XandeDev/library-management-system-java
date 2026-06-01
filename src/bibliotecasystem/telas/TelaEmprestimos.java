@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TelaEmprestimos extends JFrame {
     private JTextField campoBuscaUsuario, campoBuscaLivro;
@@ -288,7 +289,7 @@ public class TelaEmprestimos extends JFrame {
             // Filtrar apenas livros disponíveis
             List<Livro> livrosDisponiveis = livros.stream()
                 .filter(Livro::isDisponivel)
-                .toList();
+                .collect(Collectors.toList());
                 
             if (livrosDisponiveis.isEmpty()) {
                 JOptionPane.showMessageDialog(this,

@@ -1,11 +1,12 @@
 package bibliotecasystem;
 
 import bibliotecasystem.telas.TelaLogin;
+import bibliotecasystem.util.LoggerUtils;
 import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("🚀 Iniciando Sistema Biblioteca...");
+        LoggerUtils.getLogger(Main.class.getName()).info("🚀 Iniciando Sistema Biblioteca...");
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

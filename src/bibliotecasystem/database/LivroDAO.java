@@ -1,11 +1,14 @@
 package bibliotecasystem.database;
 
 import bibliotecasystem.modelos.Livro;
+import bibliotecasystem.util.LoggerUtils;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class LivroDAO {
+    private static final Logger LOGGER = LoggerUtils.getLogger(LivroDAO.class.getName());
     
     public LivroDAO() {
         // Construtor vazio - conexão será feita quando necessário

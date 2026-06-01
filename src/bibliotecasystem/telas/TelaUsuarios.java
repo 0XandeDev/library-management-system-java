@@ -2,6 +2,7 @@ package bibliotecasystem.telas;
 
 import bibliotecasystem.database.UsuarioDAO;
 import bibliotecasystem.modelos.Usuario;
+import bibliotecasystem.security.PasswordUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -178,36 +179,47 @@ public class TelaUsuarios extends JFrame {
         JTextField campoNome = new JTextField();
         JTextField campoEmail = new JTextField();
         JTextField campoTelefone = new JTextField();
-        JComboBox<String> comboTipo = new JComboBox<>(new String[]{"Estudante", "Professor", "Funcionário"});
+            JPasswordField campoSenha = new JPasswordField();
+            JComboBox<String> comboTipo = new JComboBox<>(new String[]{"Estudante", "Professor", "Funcionário"});
+            
+            panel.add(new JLabel("Nome:"));
+            panel.add(campoNome);
+            panel.add(new JLabel("Email:"));
+            panel.add(campoEmail);
+            panel.add(new JLabel("Telefone:"));
+            panel.add(campoTelefone);
+            panel.add(new JLabel("Tipo:"));
+            panel.add(comboTipo);
+            panel.add(new JLabel("Senha:"));
+            panel.add(campoSenha);
         
-        panel.add(new JLabel("Nome:"));
-        panel.add(campoNome);
-        panel.add(new JLabel("Email:"));
-        panel.add(campoEmail);
-        panel.add(new JLabel("Telefone:"));
-        panel.add(campoTelefone);
-        panel.add(new JLabel("Tipo:"));
-        panel.add(comboTipo);
-        
-        int result = JOptionPane.showConfirmDialog(this, panel, 
+        int result = JOptionPane.showConfirmDialog(this, panel,
             "➕ NOVO USUÁRIO", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        
+
         if (result == JOptionPane.OK_OPTION) {
             String nome = campoNome.getText().trim();
             String email = campoEmail.getText().trim();
             String telefone = campoTelefone.getText().trim();
             String tipo = (String) comboTipo.getSelectedItem();
-            
-            if (nome.isEmpty() || email.isEmpty() || telefone.isEmpty()) {
+
+            String senha = new String(campoSenha.getPassword()).trim();
+            if (nome.isEmpty() || email.isEmpty() || telefone.isEmpty() || senha.isEmpty()) {
                 JOptionPane.showMessageDialog(this, 
-                    "Por favor, preencha todos os campos.", 
+                    "Por favor, preencha todos os campos e informe uma senha.", 
                     "Campos obrigatórios", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            if (!email.contains("@")) {
+                JOptionPane.showMessageDialog(this,
+                    "Por favor, informe um e-mail válido.",
+                    "E-mail inválido",
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
             
             try {
-                Usuario novoUsuario = new Usuario(nome, email, telefone, tipo);
+                Usuario novoUsuario = new Usuario(nome, email, telefone, tipo, PasswordUtils.hashPassword(senha));
                 usuarioDAO.inserir(novoUsuario);
                 carregarDados();
                 
@@ -252,6 +264,7 @@ public class TelaUsuarios extends JFrame {
             JTextField campoNome = new JTextField(usuario.getNome());
             JTextField campoEmail = new JTextField(usuario.getEmail());
             JTextField campoTelefone = new JTextField(usuario.getTelefone());
+            JPasswordField campoSenha = new JPasswordField();
             JComboBox<String> comboTipo = new JComboBox<>(new String[]{"Estudante", "Professor", "Funcionário"});
             comboTipo.setSelectedItem(usuario.getTipo());
             
@@ -263,6 +276,8 @@ public class TelaUsuarios extends JFrame {
             panel.add(campoTelefone);
             panel.add(new JLabel("Tipo:"));
             panel.add(comboTipo);
+            panel.add(new JLabel("Nova senha (opcional):"));
+            panel.add(campoSenha);
             
             int result = JOptionPane.showConfirmDialog(this, panel, 
                 "✏️ EDITAR USUÁRIO - ID: " + id, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
@@ -273,10 +288,18 @@ public class TelaUsuarios extends JFrame {
                 String novoTelefone = campoTelefone.getText().trim();
                 String novoTipo = (String) comboTipo.getSelectedItem();
                 
+                String novaSenha = new String(campoSenha.getPassword()).trim();
                 if (novoNome.isEmpty() || novoEmail.isEmpty() || novoTelefone.isEmpty()) {
                     JOptionPane.showMessageDialog(this, 
                         "Por favor, preencha todos os campos.", 
                         "Campos obrigatórios", 
+                        JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (!novoEmail.contains("@")) {
+                    JOptionPane.showMessageDialog(this,
+                        "Por favor, informe um e-mail válido.",
+                        "E-mail inválido",
                         JOptionPane.WARNING_MESSAGE);
                     return;
                 }
@@ -285,6 +308,9 @@ public class TelaUsuarios extends JFrame {
                 usuario.setEmail(novoEmail);
                 usuario.setTelefone(novoTelefone);
                 usuario.setTipo(novoTipo);
+                if (!novaSenha.isEmpty()) {
+                    usuario.setSenhaHash(PasswordUtils.hashPassword(novaSenha));
+                }
                 
                 usuarioDAO.atualizar(usuario);
                 carregarDados();
