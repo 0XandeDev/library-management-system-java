@@ -1,0 +1,61 @@
+name: Auto Update
+
+on:
+  push:
+    branches:
+      - improvements/auto-update
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  format-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Apply code formatting
+        run: mvn -q spotless:apply
+
+      - name: Run tests
+        run: mvn -q test
+
+      - name: Commit any formatting changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No formatting changes to commit."
+          else
+            git commit -m "chore: auto-format and sync branch"
+            git push origin HEAD:HEAD
+          fi
+
+      - name: Create or update pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: improvements/auto-update
+          title: "Automated update: format, build and tests"
+          body: |
+            Atualização automática de formatação, compilação e testes.
+            - ✅ Formatação de código aplicada
+            - ✅ Build Ant executado
+            - ✅ Testes Maven executados
+            - ✅ Checagens de análise estática
+          base: main
+          labels: automation

@@ -11,6 +11,8 @@ import java.sql.SQLException;
 public class TelaPrincipal extends JFrame {
     private JButton btnLivros, btnUsuarios, btnEmprestimos, btnRelatorios, btnSair;
     private JLabel lblEstatisticas;
+    private JLabel lblResumoLivros;
+    private JLabel lblResumoUsuarios;
     
     private LivroDAO livroDAO;
     private UsuarioDAO usuarioDAO;
@@ -79,12 +81,14 @@ public class TelaPrincipal extends JFrame {
         painelMenu.add(new JLabel());
         painelMenu.add(btnSair);
         
-        JPanel painelConteudo = new JPanel(new BorderLayout());
+        JPanel painelConteudo = new JPanel(new BorderLayout(0, 20));
         painelConteudo.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
-        
+        painelConteudo.setBackground(Color.WHITE);
+        painelConteudo.add(criarPainelResumo(), BorderLayout.NORTH);
         painelConteudo.add(lblEstatisticas, BorderLayout.CENTER);
         
-        JPanel painelAcoes = new JPanel(new FlowLayout());
+        JPanel painelAcoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        painelAcoes.setBackground(Color.WHITE);
         JButton btnNovoEmprestimo = new JButton("➕ NOVO EMPRÉSTIMO");
         JButton btnBuscarLivro = new JButton("🔍 BUSCAR LIVRO");
         
@@ -109,6 +113,37 @@ public class TelaPrincipal extends JFrame {
         configurarBotoesMenu();
     }
     
+    private JPanel criarPainelResumo() {
+        JPanel painelResumo = new JPanel(new GridLayout(1, 2, 20, 20));
+        painelResumo.setOpaque(false);
+
+        lblResumoLivros = criarValorResumo("📚 Livros cadastrados", new Color(52, 152, 219));
+        lblResumoUsuarios = criarValorResumo("👥 Usuários ativos", new Color(46, 204, 113));
+
+        painelResumo.add(lblResumoLivros.getParent());
+        painelResumo.add(lblResumoUsuarios.getParent());
+
+        return painelResumo;
+    }
+
+    private JLabel criarValorResumo(String titulo, Color cor) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(cor);
+        card.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JLabel lblTituloCard = new JLabel(titulo);
+        lblTituloCard.setForeground(Color.WHITE);
+        lblTituloCard.setFont(new Font("Arial", Font.BOLD, 14));
+
+        JLabel lblValorCard = new JLabel("0", SwingConstants.CENTER);
+        lblValorCard.setForeground(Color.WHITE);
+        lblValorCard.setFont(new Font("Arial", Font.BOLD, 36));
+
+        card.add(lblTituloCard, BorderLayout.NORTH);
+        card.add(lblValorCard, BorderLayout.CENTER);
+        return lblValorCard;
+    }
+
     private void configurarBotoesMenu() {
         JButton[] botoes = {btnLivros, btnUsuarios, btnEmprestimos, btnRelatorios, btnSair};
         
@@ -152,15 +187,15 @@ public class TelaPrincipal extends JFrame {
             int totalUsuarios = usuarioDAO.contarUsuarios();
             int emprestimosAtivos = emprestimoDAO.contarEmprestimosAtivos();
             int emprestimosAtrasados = emprestimoDAO.contarEmprestimosAtrasados();
-            
+
+            lblResumoLivros.setText(String.valueOf(totalLivros));
+            lblResumoUsuarios.setText(String.valueOf(totalUsuarios));
             lblEstatisticas.setText("<html><center>"
                 + "<h2>📊 DASHBOARD</h2>"
                 + "<p>Estatísticas do Sistema:</p>"
                 + "<table border='1' cellpadding='10' style='margin: 0 auto; border-collapse: collapse;'>"
-                + "<tr><td><b>" + totalLivros + "</b><br>Livros</td>"
-                + "<td><b>" + totalUsuarios + "</b><br>Usuários</td>"
-                + "<tr><td><b>" + emprestimosAtivos + "</b><br>Empréstimos</td>"
-                + "<td><b>" + emprestimosAtrasados + "</b><br>Atrasos</td></tr>"
+                + "<tr><td><b>" + emprestimosAtivos + "</b><br>Empréstimos Ativos</td>"
+                + "<td><b>" + emprestimosAtrasados + "</b><br>Empréstimos Atrasados</td></tr>"
                 + "</table>"
                 + "</center></html>");
                 

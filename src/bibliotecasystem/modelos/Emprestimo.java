@@ -56,14 +56,14 @@ public class Emprestimo {
     public boolean isAtrasado() {
         if (!status.equals("ATIVO")) return false;
         
-        LocalDate devolucao = LocalDate.parse(dataDevolucao, DateTimeFormatter.ISO_DATE);
+        LocalDate devolucao = LocalDate.parse(dataDevolucao, formatter);
         return LocalDate.now().isAfter(devolucao);
     }
     
     public int getDiasAtraso() {
         if (!isAtrasado()) return 0;
         
-        LocalDate devolucao = LocalDate.parse(dataDevolucao, DateTimeFormatter.ISO_DATE);
+        LocalDate devolucao = LocalDate.parse(dataDevolucao, formatter);
         return (int) java.time.temporal.ChronoUnit.DAYS.between(devolucao, LocalDate.now());
     }
     

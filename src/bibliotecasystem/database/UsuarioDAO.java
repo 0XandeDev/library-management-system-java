@@ -1,18 +1,21 @@
 package bibliotecasystem.database;
 
 import bibliotecasystem.modelos.Usuario;
+import bibliotecasystem.util.LoggerUtils;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class UsuarioDAO {
+    private static final Logger LOGGER = LoggerUtils.getLogger(UsuarioDAO.class.getName());
     
     public UsuarioDAO() {
         // Construtor vazio - conexão será feita quando necessário
     }
     
     public void inserir(Usuario usuario) throws SQLException {
-        String sql = "INSERT INTO usuarios (nome, email, telefone, tipo) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO usuarios (nome, email, telefone, tipo, senha_hash) VALUES (?, ?, ?, ?, ?)";
         
         try (Connection conn = ConexaoBD.getConexao();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -21,6 +24,7 @@ public class UsuarioDAO {
             stmt.setString(2, usuario.getEmail());
             stmt.setString(3, usuario.getTelefone());
             stmt.setString(4, usuario.getTipo());
+            stmt.setString(5, usuario.getSenhaHash());
             
             stmt.executeUpdate();
             
@@ -46,7 +50,8 @@ public class UsuarioDAO {
                     rs.getString("nome"),
                     rs.getString("email"),
                     rs.getString("telefone"),
-                    rs.getString("tipo")
+                    rs.getString("tipo"),
+                    rs.getString("senha_hash")
                 );
                 usuario.setEmprestimosAtivos(rs.getInt("emprestimos_ativos"));
                 usuarios.add(usuario);
@@ -69,7 +74,8 @@ public class UsuarioDAO {
                         rs.getString("nome"),
                         rs.getString("email"),
                         rs.getString("telefone"),
-                        rs.getString("tipo")
+                        rs.getString("tipo"),
+                        rs.getString("senha_hash")
                     );
                     usuario.setEmprestimosAtivos(rs.getInt("emprestimos_ativos"));
                     return usuario;
@@ -79,6 +85,32 @@ public class UsuarioDAO {
         return null;
     }
     
+    public Usuario buscarPorLogin(String login) throws SQLException {
+        String sql = "SELECT * FROM usuarios WHERE email = ? OR nome = ?";
+
+        try (Connection conn = ConexaoBD.getConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, login);
+            stmt.setString(2, login);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Usuario usuario = new Usuario(
+                        rs.getInt("id"),
+                        rs.getString("nome"),
+                        rs.getString("email"),
+                        rs.getString("telefone"),
+                        rs.getString("tipo"),
+                        rs.getString("senha_hash")
+                    );
+                    usuario.setEmprestimosAtivos(rs.getInt("emprestimos_ativos"));
+                    return usuario;
+                }
+            }
+        }
+        return null;
+    }
+
     public List<Usuario> buscarPorNome(String nome) throws SQLException {
         List<Usuario> usuarios = new ArrayList<>();
         String sql = "SELECT * FROM usuarios WHERE nome LIKE ? ORDER BY nome";
@@ -94,7 +126,8 @@ public class UsuarioDAO {
                         rs.getString("nome"),
                         rs.getString("email"),
                         rs.getString("telefone"),
-                        rs.getString("tipo")
+                        rs.getString("tipo"),
+                        rs.getString("senha_hash")
                     );
                     usuario.setEmprestimosAtivos(rs.getInt("emprestimos_ativos"));
                     usuarios.add(usuario);
@@ -105,7 +138,7 @@ public class UsuarioDAO {
     }
     
     public void atualizar(Usuario usuario) throws SQLException {
-        String sql = "UPDATE usuarios SET nome = ?, email = ?, telefone = ?, tipo = ? WHERE id = ?";
+        String sql = "UPDATE usuarios SET nome = ?, email = ?, telefone = ?, tipo = ?, senha_hash = ? WHERE id = ?";
         
         try (Connection conn = ConexaoBD.getConexao();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -114,7 +147,8 @@ public class UsuarioDAO {
             stmt.setString(2, usuario.getEmail());
             stmt.setString(3, usuario.getTelefone());
             stmt.setString(4, usuario.getTipo());
-            stmt.setInt(5, usuario.getId());
+            stmt.setString(5, usuario.getSenhaHash());
+            stmt.setInt(6, usuario.getId());
             
             stmt.executeUpdate();
         }
